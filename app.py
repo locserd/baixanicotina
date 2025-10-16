@@ -765,4 +765,7 @@ if __name__ == '__main__':
     # Verifica se existe banco, se não redireciona para upload
     if os.path.exists('pasteis.db'):
         init_db()  # Garante que as tabelas existem
-    app.run(host='0.0.0.0', port=10000, debug=True)
+    
+    # Porta configurável via variável de ambiente (equivalente ao Node.js)
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port, debug=True)
