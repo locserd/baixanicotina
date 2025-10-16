@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request, redirect, url_for, session, flash
+from flask import Flask, render_template_string, request, redirect, url_for, session, flash, send_file
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -6,6 +6,7 @@ from datetime import date, datetime, timedelta
 import sqlite3
 import os
 import shutil
+import time
 
 app = Flask(__name__)
 app.secret_key = 'sua-chave-secreta-aqui-mude-em-producao'
@@ -466,7 +467,9 @@ template = '''
 </head>
 <body>
     <div class="logout">
-        <a href="/logout">Sair ({{ current_user.username }})</a>
+        <a href="/logout" style="text-decoration:none;">Sair ({{ current_user.username }})</a>
+        <span style="margin:0 8px;">|</span>
+        <a href="/download_db" style="text-decoration:none;">Download do banco de dados</a>
     </div>
     <h2 class="center">Contador de Pastéis</h2>
     <form method="post" action="/add">
@@ -760,6 +763,18 @@ def get_quantidade_ajax():
     data = request.args.get('data', date.today().isoformat())
     quantidade = get_quantidade(data)
     return {'quantidade': quantidade}
+
+@app.route('/download_db')
+@login_required
+def download_db():
+    # Fecha conexões SQLite antes do download
+    try:
+        import gc
+        gc.collect()
+    except Exception:
+        pass
+    db_path = 'pasteis.db'
+    return send_file(db_path, as_attachment=True, download_name=f"pasteis_{int(time.time())}.db")
 
 if __name__ == '__main__':
     # Verifica se existe banco, se não redireciona para upload
